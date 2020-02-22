@@ -1,5 +1,6 @@
 #include "pch.h"
 
+DWORD WINAPI http_listen(LPVOID pParam);
 DWORD WINAPI cl_proc(LPVOID x);
 WEBXM* webx = nullptr;
 
@@ -80,6 +81,8 @@ int __cdecl main()
 	printf("[webx 2.0] HTTP/S Framework stable & listening for connections!\n");
 	printf("-------------------webx 2.0 by Skyler Nelson-------------------\n");
 
+	CreateThread(NULL, NULL, http_listen, (LPVOID)webx, 0, NULL);
+
 	while (true)
 	{
 		if (!webx->https_srv->IsValid()) {
@@ -154,11 +157,11 @@ DWORD WINAPI http_listen(LPVOID pParam)
 
 		if (srv->http_srv->SelectReadable({ 0,0 }) > 0) {
 			CSOCKET* client = srv->http_srv->Accept();
-
-			if (!client->IsValid()) {
+			printf("dbg 1\n");
+			if (client->IsValid()) {
 				cl_http_packet con_data = srv->httph->ConstructHTTPStruct(client);
 				con_data.secure = false;
-
+				printf("dbg 12\n");
 				HANDLE process_cl_request = CreateThread(NULL, NULL, cl_proc, (LPVOID)&con_data, 0, NULL);
 			} else {
 				delete client;
@@ -194,17 +197,21 @@ DWORD WINAPI cl_proc(LPVOID pParam)
 			return NULL;
 		}
 	}
-
+	printf("dbg 13\n");
 	char buff[1501];
 	ZeroMemory(buff, 1501);
-
-	while (int got = client->client->Recv(buff, 1500))
+	auto shut = false;
+	while (!shut)
 	{
+		int got = client->client->Recv(buff, 1500);
+
 		if (got == SOCKET_ERROR)
 			break;
 
-		webx->httph->ParseHTTPRequest(buff, client);
+		printf("dbg 14\n");
 
+		webx->httph->ParseHTTPRequest(buff, client);
+		printf("dbg 5\n");
 		printf("client 0x%p called request method '%s' for target resource '%s'", client->client, client->request_method, client->request_data);
 	}
 }
