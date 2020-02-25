@@ -14,13 +14,11 @@ static WEBXM* webx_init()
 	boot->HTTP_init.port			= "80";
 	boot->HTTP_init.dataprotocol	= CSOCKET_TCP;
 	boot->HTTP_init.ipprotocol		= CSOCKET_IPV4;
-	boot->HTTP_init.nonblocking		= true;
 
 	boot->HTTPS_init.address		= "0.0.0.0";
 	boot->HTTPS_init.port			= "443";
 	boot->HTTPS_init.dataprotocol	= CSOCKET_TCP;
 	boot->HTTPS_init.ipprotocol		= CSOCKET_IPV4;
-	boot->HTTPS_init.nonblocking	= true;
 
 	//initialize HTTP & HTTPS listening sockets
 	boot->http_srv  = new CSOCKET(&boot->HTTP_init);
@@ -28,7 +26,7 @@ static WEBXM* webx_init()
 
 	int ret  = boot->http_srv->Bind();
 	int ret2 = boot->https_srv->Bind();
-	if (ret == CSOCKET_FATAL_ERROR || ret2 == CSOCKET_FATAL_ERROR) {
+	if (ret != CSOCKET_SOCK_SOCCESS || ret2 != CSOCKET_SOCK_SOCCESS) {
 		printf("[webx 2.0] server boot failed! CSOCKET failed to Bind server socket!\n");
 
 		return nullptr;
@@ -36,7 +34,7 @@ static WEBXM* webx_init()
 
 	ret  = boot->http_srv->Listen();
 	ret2 = boot->https_srv->Listen();
-	if (ret == CSOCKET_FATAL_ERROR || ret2 == CSOCKET_FATAL_ERROR) {
+	if (ret != CSOCKET_SOCK_SOCCESS || ret2 != CSOCKET_SOCK_SOCCESS) {
 		printf("[webx 2.0] server boot failed! CSOCKET failed to begin Listenin !\n");
 
 		return nullptr;
@@ -92,8 +90,8 @@ int __cdecl main()
 
 			delete webx->https_srv;
 			webx->https_srv = new CSOCKET(&webx->HTTPS_init);
-			if (webx->https_srv->Bind() == 0) {
-				if (webx->https_srv->Listen() == 0) {
+			if (webx->https_srv->Bind() == CSOCKET_SOCK_SOCCESS) {
+				if (webx->https_srv->Listen() == CSOCKET_SOCK_SOCCESS) {
 					printf("[webx 2.0] webx rebooted server HTTPS listener!\n");
 				}
 			} else {
@@ -114,7 +112,8 @@ int __cdecl main()
 
 				}
 
-				cl_http_packet con_data = webx->httph->ConstructHTTPStruct(client);
+				cl_http_packet con_data;
+				con_data.client = client;//= webx->httph->ConstructHTTPStruct(client);
 				con_data.secure = true;
 
 				HANDLE process_cl_request = CreateThread(NULL, NULL, cl_proc, (LPVOID)&con_data, 0, NULL);
@@ -144,8 +143,8 @@ DWORD WINAPI http_listen(LPVOID pParam)
 
 			delete srv->http_srv;
 			srv->http_srv = new CSOCKET(&srv->HTTP_init);
-			if (srv->http_srv->Bind() == 0) {
-				if (srv->http_srv->Listen() == 0) {
+			if (srv->http_srv->Bind() == CSOCKET_SOCK_SOCCESS) {
+				if (srv->http_srv->Listen() == CSOCKET_SOCK_SOCCESS) {
 					printf("[webx 2.0] webx rebooted server HTTP listener!\n");
 				}
 			} else {
@@ -159,7 +158,8 @@ DWORD WINAPI http_listen(LPVOID pParam)
 			CSOCKET* client = srv->http_srv->Accept();
 			printf("dbg 1\n");
 			if (client->IsValid()) {
-				cl_http_packet con_data = srv->httph->ConstructHTTPStruct(client);
+				cl_http_packet con_data;
+				con_data.client = client;//= srv->httph->ConstructHTTPStruct(client);
 				con_data.secure = false;
 				printf("dbg 12\n");
 				HANDLE process_cl_request = CreateThread(NULL, NULL, cl_proc, (LPVOID)&con_data, 0, NULL);
@@ -204,15 +204,21 @@ DWORD WINAPI cl_proc(LPVOID pParam)
 	while (!shut)
 	{
 		int got = client->client->Recv(buff, 1500);
-
+		printf("%d\n", got);
 		if (got == SOCKET_ERROR)
 			break;
 
+		printf("recv'd data: %s\n", buff);
+
+
+
 		printf("dbg 14\n");
 
-		webx->httph->ParseHTTPRequest(buff, client);
+		//webx->httph->ParseHTTPRequest(buff, client);
 		printf("dbg 5\n");
-		printf("client 0x%p called request method '%s' for target resource '%s'", client->client, client->request_method, client->request_data);
+		//printf("client 0x%p called request method '%s' for target resource '%s'", client->client, client->request_method, client->request_data);
+
+		shut = true;
 	}
 }
 
