@@ -5,10 +5,11 @@ typedef struct cl_http_packet
 {
 	//client request information for when dissecting a packet
 	CSOCKET* client;
-	const char* request_method;
-	const char* request_data;
-	const char* request_connection;
+	std::string request_method;
+	std::string request_data;
+	std::string request_connection;
 	bool secure;
+
 	std::map<std::string, std::string> http_headers;
 } cl_http_packet;
 

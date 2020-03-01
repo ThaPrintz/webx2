@@ -36,40 +36,41 @@ std::map <std::string, void* >* HTTPHandler::GetRemoteFuncsTable()
 	return &remotefuncs;
 }
 
-void HTTPHandler::ParseHTTPRequest(char* in_http_request, cl_http_packet* parsed_request)
+std::map<std::string, std::string> HTTPHandler::ParseHTTPRequest(char* in_http_request, cl_http_packet* parsed_request)
 {
-	auto htemp = strExplode(in_http_request, '\r\n');
+	std::string buff = std::string(in_http_request);
+	auto htemp = strExplode(buff, '\r\n');
 	auto request_details = strExplode(htemp[0], ' ');
 
-	parsed_request->request_method		= request_details[0].c_str();
-	parsed_request->request_data	    = request_details[1].c_str();
-	parsed_request->request_connection  = request_details[2].c_str();
+	std::map<std::string, std::string> cat;
+
+	parsed_request->request_method = request_details[0];
+	parsed_request->request_data = request_details[1];
+	parsed_request->request_connection = request_details[2];
 
 	std::vector<std::string> reqheaders;
-
-	auto it = reqheaders.begin();
 	for (int i = 0; i <= htemp.size() - 3; i++)
 	{
 		reqheaders.push_back(htemp[i]);
 	}
 
-	for (int k = 1; k <= (int)reqheaders.size(); k++)
+	for (int k = 1; k < (int)reqheaders.size(); k++)
 	{
 		auto req_data = strExplode(reqheaders[k], ':');
 
 		std::string value, prev;
-		for (auto const& g : req_data) {
+		for (auto& g : req_data) {
 			value = g.substr(1, g.size());
 
 			if (g[0] != ' ') {
-				parsed_request->http_headers[value] = "";
-
 				prev = value;
 			} else {
-				parsed_request->http_headers[prev] = value;
+				cat.emplace(prev, value);
 			}
 		}
 	}
+
+	return cat;
 }
 
 std::string HTTPHandler::ConstructHTTPPacket(sv_http_packet headers)

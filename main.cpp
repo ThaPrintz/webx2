@@ -156,12 +156,10 @@ DWORD WINAPI http_listen(LPVOID pParam)
 
 		if (srv->http_srv->SelectReadable({ 0,0 }) > 0) {
 			CSOCKET* client = srv->http_srv->Accept();
-			printf("dbg 1\n");
 			if (client->IsValid()) {
-				cl_http_packet con_data;
-				con_data.client = client;//= srv->httph->ConstructHTTPStruct(client);
+				cl_http_packet con_data = srv->httph->ConstructHTTPStruct(client);
 				con_data.secure = false;
-				printf("dbg 12\n");
+
 				HANDLE process_cl_request = CreateThread(NULL, NULL, cl_proc, (LPVOID)&con_data, 0, NULL);
 			} else {
 				delete client;
@@ -197,26 +195,28 @@ DWORD WINAPI cl_proc(LPVOID pParam)
 			return NULL;
 		}
 	}
-	printf("dbg 13\n");
+
 	char buff[1501];
 	ZeroMemory(buff, 1501);
 	auto shut = false;
 	while (!shut)
 	{
 		int got = client->client->Recv(buff, 1500);
-		printf("%d\n", got);
-		if (got == SOCKET_ERROR)
+		if (got == CSOCKET_FATAL_ERROR)
 			break;
 
-		printf("recv'd data: %s\n", buff);
+		printf("%s\n", buff);
 
+		auto dets = webx->httph->ParseHTTPRequest(buff, client);
 
+		client->http_headers.swap(dets);
 
-		printf("dbg 14\n");
+		for (auto& n : client->http_headers)
+		{
+			printf("%s:%s\n", n.first.c_str(), n.second.c_str());
+		}
 
-		//webx->httph->ParseHTTPRequest(buff, client);
-		printf("dbg 5\n");
-		//printf("client 0x%p called request method '%s' for target resource '%s'", client->client, client->request_method, client->request_data);
+		printf("client 0x%p called request method '%s' for target resource '%s'", client->client, client->request_method.c_str(), client->request_data.c_str());
 
 		shut = true;
 	}

@@ -10,7 +10,7 @@ public:
 	static void RegisterRemoteCFunc(const char* req, void* ptr);
 	static void CallRemoteCFunc(const char* req, void* pParam, void* pParam2);
 
-	static void ParseHTTPRequest(char* data, cl_http_packet* cl);
+	static std::map<std::string, std::string> ParseHTTPRequest(char* data, cl_http_packet* cl);
 	static std::string ConstructHTTPPacket(sv_http_packet sv);
 
 	cl_http_packet ConstructHTTPStruct(CSOCKET* cl);
