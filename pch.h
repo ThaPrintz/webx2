@@ -3,7 +3,8 @@
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 
-#include <wolfssl/ssl.h>
+#include "csocket.h"
+#include "luxlib.h"
 
 #include <Windows.h>
 #include <map>
@@ -13,7 +14,6 @@
 #include <ctime>
 #include <algorithm>
 
-#include "csocket.h"
 #include "HTTPQueue.h"
 #include "HTTPHandler.h"
 #include "LockX.h"
@@ -34,8 +34,6 @@ typedef struct WEBXM
 	csockdata HTTPS_init;
 
 	HTTPHandler* httph;
-
-	LockX* mutex;
 } WEBXM;
 
 //DWORD WINAPI http_listen(LPVOID pParam);

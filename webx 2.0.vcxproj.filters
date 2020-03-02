@@ -41,9 +41,6 @@
     <ClInclude Include="HTTPQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\csocket\csocket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LockX.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -16,6 +16,9 @@ struct HTTPRequestHandlers
 	static void ABOUTME(LPVOID, LPVOID);
 	static void DOCS(LPVOID, LPVOID);
 	static void PORTFOLIO(LPVOID, LPVOID);
+
+	static void LUXZCALL(LPVOID);
+	static void CRYPTX(LPVOID);
 };
 
 //typedef struct RemoteCFunctions
