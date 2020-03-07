@@ -7,12 +7,14 @@ DWORD WINAPI http_listen(LPVOID);
 DWORD WINAPI request_proc(LPVOID);
 
 webxlib* master;
+webxlib::webhook* webhks;
 
 int main()
 {
-	master = CreateWEBXInterface();
-		  		
-	websockdata httpsl;
+	master = CreateWEBXInterface();	  
+	webhks = master->NewWebhookInterface();
+
+	csockdata httpsl;
 	httpsl.address		 = "0.0.0.0";
 	httpsl.port			 = "443";
 	httpsl.dataprotocol  = TCPWEBSOCK;
@@ -28,6 +30,8 @@ int main()
 	ret2 = httpsListener->Listen();
 	if (ret2 != WEBSOCK_SUCCESS)
 		printf("[webx] Server boot failed, master listening socket failed to begin Listening\n");
+
+	webhks->RegisterWebhook("INDEX", DEFAULT);
 
 	printf("[webx 2.0] webx boot procedure completed successfully!\n");
 	printf("[webx 2.0] HTTP/S Framework stable & listening for connections!\n");
@@ -61,10 +65,7 @@ int main()
 				client->SSLBind();
 
 				if (client->SSLAccept()) {
-					if (!client->IsSecure())
-						client->SetSecure(true);
-
-					HANDLE process_cl_request = CreateThread(NULL, NULL, request_proc, (LPVOID)&client, 0, NULL);
+					HANDLE process_cl_request = CreateThread(NULL, NULL, request_proc, (LPVOID)client, 0, NULL);
 				}
 			} else {
 				delete client;
@@ -81,7 +82,7 @@ DWORD WINAPI http_listen(LPVOID pparam)
 {
 	webxlib* srv = (webxlib*)pparam;
 
-	websockdata httpl;
+	csockdata httpl;
 	httpl.address		= "0.0.0.0";
 	httpl.port			= "80";
 	httpl.dataprotocol  = TCPWEBSOCK;
@@ -120,10 +121,7 @@ DWORD WINAPI http_listen(LPVOID pparam)
 		if (httpListener->SelectReadable({ 0,0 }) > 0) {
 			webxlib::socket* client = httpListener->Accept();
 			if (client->IsValid()) {
-				if (client->IsSecure())
-					client->SetSecure(false);
-
-				HANDLE process_cl_request = CreateThread(NULL, NULL, request_proc, (LPVOID)&client, 0, NULL);
+				HANDLE process_cl_request = CreateThread(NULL, NULL, request_proc, (LPVOID)client, 0, NULL);
 			} else {
 				delete client;
 
@@ -139,31 +137,36 @@ DWORD WINAPI request_proc(LPVOID pparam)
 {
 	webxlib::socket* client = (webxlib::socket*)pparam;
 
-	if (!client->IsValid()) {
+	if (!client->IsValid())
 		return NULL;
-	}
 
 	char buff[1501];
 	ZeroMemory(buff, 1501);
 	auto shut = false;
+
 	while (!shut) {
 		int got = client->Recv(buff, 1500);
-		printf("\n\n%i\n\n", got);
 		if (got == WEBSOCK_ERROR) {
 			break;
 		}
 
-		printf("%s\n", buff);
+		cl_info cl;
+		cl.cl		= client;
+		cl.rheaders = master->ParseHTTPRequest(buff);
 
-		auto dets = master->ParseHTTPRequest(buff);
-		for (auto& n : dets) {
-			printf("x%s:%s\n", n.first.c_str(), n.second.c_str());
+		auto hooks = webhks->GetHookTable();
+		std::map<std::string, void*>::iterator it = hooks->find(cl.rheaders["DATA"]);
+
+		if (it != hooks->end()) {
+			webhks->CallWebhook(cl.rheaders["DATA"].data(), (void*)master, (void*)&cl);
+		} else {
+			webhks->CallWebhook("INDEX", (void*)master, (void*)&cl);
 		}
-
-		printf("client 0x%p called request method '%s' for target resource '%s'", client, dets["METHOD"].c_str(), dets["DATA"].c_str());
 
 		shut = true;
 	}
+
+	delete client;
 
 	return NULL;
 }

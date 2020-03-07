@@ -18,9 +18,18 @@
     <ClCompile Include="servermain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="webhooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rsc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="webhooks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
