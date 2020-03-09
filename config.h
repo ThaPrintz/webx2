@@ -26,7 +26,7 @@ default file names, if this file is found, it will load it instead of
 sending one of the defaults defined above
 ***************************************************************************/
 //first page server loads when recieving HTTP GET request for '/'
-const char* index = "index.html";
+const char* webxindex = "index.html";
 
 //server response codes in which loading a custom file would make sense
 const char* foocp = "400.html";

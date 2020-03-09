@@ -2,7 +2,6 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include "webhooks.h"
-
 #include "webxlib.h"
 
 typedef struct cl_info

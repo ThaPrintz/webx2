@@ -149,15 +149,12 @@ DWORD WINAPI request_proc(LPVOID pparam)
 		if (got == WEBSOCK_ERROR) {
 			break;
 		}
-
+		printf("\n%s\n", buff);
 		cl_info cl;
 		cl.cl		= client;
 		cl.rheaders = master->ParseHTTPRequest(buff);
 
-		auto hooks = webhks->GetHookTable();
-		std::map<std::string, void*>::iterator it = hooks->find(cl.rheaders["DATA"]);
-
-		if (it != hooks->end()) {
+		if (webhks->hookIsValid(cl.rheaders["DATA"])) {
 			webhks->CallWebhook(cl.rheaders["DATA"].data(), (void*)master, (void*)&cl);
 		} else {
 			webhks->CallWebhook("INDEX", (void*)master, (void*)&cl);
