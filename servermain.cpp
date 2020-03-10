@@ -154,6 +154,9 @@ DWORD WINAPI request_proc(LPVOID pparam)
 		cl.cl		= client;
 		cl.rheaders = master->ParseHTTPRequest(buff);
 
+		if (cl.rheaders["DATA"].substr(1, cl.rheaders["DATA"].size() - 1) == "favicon.ico")
+			break;
+
 		if (webhks->hookIsValid(cl.rheaders["DATA"])) {
 			webhks->CallWebhook(cl.rheaders["DATA"].data(), (void*)master, (void*)&cl);
 		} else {

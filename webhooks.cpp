@@ -9,7 +9,7 @@ void* DEFAULT(void* pparam, void* pparam2)
 	cl_info* client = (cl_info*)pparam2;
 
 	if (client->rheaders["METHOD"] == "GET") {
-		const char* data = client->rheaders["DATA"].c_str();
+		std::string data = client->rheaders["DATA"];
 
 		HTTP_packet resp;
 		resp.server					 = std::string("webxlib HTTP Framework");
@@ -17,7 +17,7 @@ void* DEFAULT(void* pparam, void* pparam2)
 
 		size_t filesz;
 
-		if (strcmp(data, "/") == 0) {
+		if (strcmp(data.c_str(), "/") == 0) {
 			resp.responsecode = std::string("200 OK");
 			resp.content_type = std::string("text/html");
 
@@ -34,26 +34,30 @@ void* DEFAULT(void* pparam, void* pparam2)
 
 			return NULL;
 		} else {
-			data = client->rheaders["DATA"].substr(1, client->rheaders["DATA"].size() - 1).data();
+			data = client->rheaders["DATA"].substr(1, client->rheaders["DATA"].size() - 1);
 
-			if (srv->fileExists(data)) {
+			if (strcmp(data.c_str(), "favicon.ico") == 0)
+				return NULL;
+
+			if (srv->fileExists(data.c_str())) {
 				auto mimetypes = srv->GetMimetypesTable();
-				std::string fType = PathFindExtensionA((LPCSTR)data);
+				std::string fType = PathFindExtensionA((LPCSTR)data.c_str());
 
 				if (fType != "\0") {
 					fType = fType.substr(1, fType.size() - 1);
 
 					auto it = mimetypes.find(fType.data());
 					if (it != mimetypes.end()) {
-						resp.responsecode = std::string("200 OK");
 						resp.content_type = mimetypes[fType];
 					} else {
-						resp.responsecode = std::string("200 OK");
 						resp.content_type = std::string("application/octet-stream");
 					}
 
-					resp.response_content = "";
-					auto filed = (const char*)srv->LoadFiletoMem((char*)data, &filesz);
+					resp.responsecode		= std::string("200 OK");
+					resp.response_content	= "";
+
+					printf("\n\nxf: %s\n\n", data.c_str());
+					auto filed = (const char*)srv->LoadFiletoMem((char*)data.data(), &filesz);
 					resp.content_length = std::to_string(filesz);
 
 
@@ -61,10 +65,10 @@ void* DEFAULT(void* pparam, void* pparam2)
 
 					client->cl->Send(reply.c_str(), reply.size());
 					client->cl->Send(filed, filesz);
-				} else {
-					//this means there was either no file extension found on the file or its a directory, 
-					//so we'll treat it like a directory?
 
+					return NULL;
+				} else {
+					//this means there was either no file extension found on the file or its a directory, so we'll treat it like a directory?
 
 					//get the filepath to the location of the web server client
 					char cCurrentPath[FILENAME_MAX];
@@ -112,8 +116,8 @@ void* DEFAULT(void* pparam, void* pparam2)
 					char* ret2 = (char*)srv->LoadFiletoMem((char*)"canvas2.html", &fsize2);
 
 					//calculate size of buffer needed for HTML & create buffer
-					int buffsz = filesz + fsize2 + fNames + (fCount * 89/*89 is the amount of characters in HTML each directory listing needs*/);
-					buffsz *= 1.2;
+					int buffsz = filesz + fsize2 + fNames + (fCount * 115/*115 is the amount of characters in HTML each directory listing needs*/);
+					buffsz *= 1.4;
 
 					char* trueret = new char[buffsz];
 					trueret[0] = '\0';
@@ -122,46 +126,52 @@ void* DEFAULT(void* pparam, void* pparam2)
 					strncat_s(trueret, buffsz, ret, filesz);
 
 					//copy directory name HTML to buffer
-					strncat_s(trueret, buffsz, "<h1 class=\"text - lowercase text - white font - weight - bold\">", strlen("<h1 class=\"text - lowercase text - white font - weight - bold\">"));
-					strncat_s(trueret, buffsz, data, strlen(data));
-					strncat_s(trueret, buffsz, "/</h1>< hr class = \"divider my-4\" >< / div>< div class = \"col-lg-8 align-self-baseline\">", strlen("</h1>< hr class = \"divider my-4\" >< / div>< div class = \"col-lg-8 align-self-baseline\">"));
+					strncat_s(trueret, buffsz, "<h1 class=\"text-lowercase text-white font-weight-bold\">", strlen("<h1 class=\"text-lowercase text-white font-weight-bold\">"));
+					strncat_s(trueret, buffsz, data.data(), data.length());
+					strncat_s(trueret, buffsz, "/</h1><hr class=\"divider my-4\"></div><div class=\"col-lg-8 align-self-baseline\">", strlen("/</h1><hr class=\"divider my-4\"></div><div class=\"col-lg-8 align-self-baseline\">"));
 
 					//generate HTML for directory listing
-					hFindFile = FindFirstFile((LPCWSTR)newdir, &FindFileData);
+					wchar_t filename[4096] = { 0 };
+					MultiByteToWideChar(0, 0, newdir, strlen(newdir), filename, strlen(newdir));
+
+					hFindFile = FindFirstFile(filename, &FindFileData);
 					if (hFindFile != INVALID_HANDLE_VALUE) {
 						do {
+							std::wstring ws(FindFileData.cFileName);
+							std::string dp(ws.begin(), ws.end());
+
 							if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-								strncat_s(trueret, buffsz, "<a class=\"btn btn-md btn-outline-light\" href = \"", strlen("<a class=\"btn btn-md btn-outline-light\" href = \""));
-								strncat_s(trueret, buffsz, data, strlen(data));
+								strncat_s(trueret, buffsz, "<p class=\"text-white-75 font-weight-light mb-5\" style=\"text-align: left; margin-left: 7vw\"\">", strlen("<p class=\"text-white-75 font-weight-light mb-5\" style=\"text-align: left; margin-left: 7vw\"\">"));
+								strncat_s(trueret, buffsz, data.data(), data.length());
 								strncat_s(trueret, buffsz, "/", strlen("/"));
-								strncat_s(trueret, buffsz, (char*)FindFileData.cFileName, strlen((char*)FindFileData.cFileName));
-								strncat_s(trueret, buffsz, "\" role=\"button\">skylers.work", strlen("\" role=\"button\">skylers.work"));
-								strncat_s(trueret, buffsz, data, strlen(data));
-								strncat_s(trueret, buffsz, "/", strlen("/"));
-								strncat_s(trueret, buffsz, (char*)FindFileData.cFileName, strlen((char*)FindFileData.cFileName));
-								strncat_s(trueret, buffsz, "</a><br><br>", strlen("</a><br><br>"));
+								strncat_s(trueret, buffsz, dp.c_str(), dp.length());
+								strncat_s(trueret, buffsz, "</p>", strlen("</p>"));
+								//strncat_s(trueret, buffsz, data.data(), data.length());
+								//strncat_s(trueret, buffsz, "/", strlen("/"));
+								//strncat_s(trueret, buffsz, (char*)FindFileData.cFileName, std::char_traits<wchar_t>::length(FindFileData.cFileName));
+								//strncat_s(trueret, buffsz, "</a><br><br>", strlen("</a><br><br>"));
 							} else if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 								if (FindFileData.cFileName[0] == '.' && FindFileData.cFileName[1] == '\0' || FindFileData.cFileName[0] == '.' && FindFileData.cFileName[1] == '.') continue;
 
-								std::string dp = std::string((char*)FindFileData.cFileName);
 								std::vector<std::string>fp = srv->stringExp(dp, '\\');
 
-								strncat_s(trueret, buffsz, "<a class=\"btn btn-md btn-outline-light\" href = \"", strlen("<a class=\"btn btn-md btn-outline-light\" href = \""));
-								strncat_s(trueret, buffsz, data, strlen(data));
+								strncat_s(trueret, buffsz, "<p class=\"text-white-75 font-weight-light mb-5\" style=\"text-align: left; margin-left: 7vw\"\">", strlen("<p class=\"text-white-75 font-weight-light mb-5\" style=\"text-align: left; margin-left: 7vw\"\">"));
+								strncat_s(trueret, buffsz, data.data(), data.length());
 								strncat_s(trueret, buffsz, "/", strlen("/"));
 								strncat_s(trueret, buffsz, fp[fp.size() - 1].data(), fp[fp.size() - 1].length());
-								strncat_s(trueret, buffsz, "\" role=\"button\">skylers.work", strlen("\" role=\"button\">skylers.work"));
-								strncat_s(trueret, buffsz, data, strlen(data));
-								strncat_s(trueret, buffsz, "/", strlen("/"));
-								strncat_s(trueret, buffsz, fp[fp.size() - 1].data(), fp[fp.size() - 1].length());
-								strncat_s(trueret, buffsz, "/</a><br><br>", strlen("/</a><br><br>"));
+								strncat_s(trueret, buffsz, "/</p>", strlen("/</p>"));
+								//strncat_s(trueret, buffsz, "\" role=\"button\">skylers.work", strlen("\" role=\"button\">skylers.work"));
+								//strncat_s(trueret, buffsz, data.data(), data.length());
+								//strncat_s(trueret, buffsz, "/", strlen("/"));
+								//strncat_s(trueret, buffsz, fp[fp.size() - 1].data(), fp[fp.size() - 1].length());
+								//strncat_s(trueret, buffsz, "/</a><br><br>", strlen("/</a><br><br>"));
 							}
 						} while (FindNextFile(hFindFile, &FindFileData) != 0);
 
 						FindClose(hFindFile);
 					}
-
 					//copy second half of canvas page HTML to buffer
+
 					strncat_s(trueret, buffsz, ret2, fsize2);
 
 					resp.responsecode = std::string("200 OK");
@@ -182,10 +192,10 @@ void* DEFAULT(void* pparam, void* pparam2)
 				resp.response_content = "";
 
 				if (srv->fileExists(fofcp)) {
+					const char* sd = (char*)srv->LoadFiletoMem((char*)fofcp, &filesz);
 					resp.content_length = std::to_string(filesz);
 
 					auto reply = srv->BuildResponsePacket(resp);
-					const char* sd = (char*)srv->LoadFiletoMem((char*)fofcp, &filesz);
 
 					client->cl->Send(reply.c_str(), reply.size());
 					client->cl->Send(sd, filesz);
