@@ -3,6 +3,7 @@
 
 #include "webhooks.h"
 #include "webxlib.h"
+#include "luxlib.h"
 
 typedef struct cl_info
 {

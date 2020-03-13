@@ -32,6 +32,7 @@ int main()
 		printf("[webx] Server boot failed, master listening socket failed to begin Listening\n");
 
 	webhks->RegisterWebhook("INDEX", DEFAULT);
+	webhks->RegisterWebhook("RUNSTRING", RUNLUA);
 
 	printf("[webx 2.0] webx boot procedure completed successfully!\n");
 	printf("[webx 2.0] HTTP/S Framework stable & listening for connections!\n");
@@ -149,6 +150,10 @@ DWORD WINAPI request_proc(LPVOID pparam)
 		if (got == WEBSOCK_ERROR) {
 			break;
 		}
+
+		if (strcmp(buff, "") == 0)
+			break;
+
 		printf("\n%s\n", buff);
 		cl_info cl;
 		cl.cl		= client;
@@ -157,8 +162,10 @@ DWORD WINAPI request_proc(LPVOID pparam)
 		if (cl.rheaders["DATA"].substr(1, cl.rheaders["DATA"].size() - 1) == "favicon.ico")
 			break;
 
-		if (webhks->hookIsValid(cl.rheaders["DATA"])) {
-			webhks->CallWebhook(cl.rheaders["DATA"].data(), (void*)master, (void*)&cl);
+		auto cll = cl.rheaders["DATA"].substr(1, cl.rheaders["DATA"].size() - 1);
+
+		if (webhks->hookIsValid(cll) ){
+			webhks->CallWebhook(cll, (void*)master, (void*)&cl);
 		} else {
 			webhks->CallWebhook("INDEX", (void*)master, (void*)&cl);
 		}

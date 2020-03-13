@@ -3,6 +3,17 @@
 #include "config.h"
 #include <direct.h>
 
+__declspec(dllimport) luxZ* NewLUXInterface();
+
+void* RUNLUA(void* pparam, void* pparam2)
+{
+	webxlib* srv	= (webxlib*)pparam;
+	cl_info* client = (cl_info*)pparam2;
+	luxZ* luxi		= NewLUXInterface();
+
+	return NULL;
+}
+
 void* DEFAULT(void* pparam, void* pparam2)
 {
 	webxlib* srv    = (webxlib*)pparam;
@@ -12,8 +23,8 @@ void* DEFAULT(void* pparam, void* pparam2)
 		std::string data = client->rheaders["DATA"];
 
 		HTTP_packet resp;
-		resp.server					 = std::string("webxlib HTTP Framework");
-		resp.connection				 = std::string("close");
+		resp.server		= std::string("webxlib HTTP Framework");
+		resp.connection	= std::string("close");
 
 		size_t filesz;
 
@@ -36,9 +47,6 @@ void* DEFAULT(void* pparam, void* pparam2)
 		} else {
 			data = client->rheaders["DATA"].substr(1, client->rheaders["DATA"].size() - 1);
 
-			if (strcmp(data.c_str(), "favicon.ico") == 0)
-				return NULL;
-
 			if (srv->fileExists(data.c_str())) {
 				auto mimetypes = srv->GetMimetypesTable();
 				std::string fType = PathFindExtensionA((LPCSTR)data.c_str());
@@ -56,7 +64,6 @@ void* DEFAULT(void* pparam, void* pparam2)
 					resp.responsecode		= std::string("200 OK");
 					resp.response_content	= "";
 
-					printf("\n\nxf: %s\n\n", data.c_str());
 					auto filed = (const char*)srv->LoadFiletoMem((char*)data.data(), &filesz);
 					resp.content_length = std::to_string(filesz);
 
@@ -97,13 +104,20 @@ void* DEFAULT(void* pparam, void* pparam2)
 					int				fCount = 0;
 					int				fNames = 0;
 
-					HANDLE hFindFile = FindFirstFile((LPCWSTR)newdir, &FindFileData);
+					//generate HTML for directory listing
+					wchar_t filename[4096] = { 0 };
+					MultiByteToWideChar(0, 0, newdir, strlen(newdir), filename, strlen(newdir));
+
+					HANDLE hFindFile = FindFirstFile(filename, &FindFileData);
 					if (hFindFile != INVALID_HANDLE_VALUE) {
 						do {
 							if (FindFileData.cFileName[0] == '.' && FindFileData.cFileName[1] == '\0' || FindFileData.cFileName[0] == '.' && FindFileData.cFileName[1] == '.') continue;
 
+							std::wstring ws(FindFileData.cFileName);
+							std::string dp(ws.begin(), ws.end());
+
 							fCount++;
-							fNames += (strlen(client->rheaders["DATA"].data()) + std::char_traits<wchar_t>::length(FindFileData.cFileName) + 2);
+							fNames += ((int)client->rheaders["DATA"].length()*5) + ((int)dp.length()*5) + 4;
 						} while (FindNextFile(hFindFile, &FindFileData) != 0);
 
 						FindClose(hFindFile);
@@ -116,8 +130,7 @@ void* DEFAULT(void* pparam, void* pparam2)
 					char* ret2 = (char*)srv->LoadFiletoMem((char*)"canvas2.html", &fsize2);
 
 					//calculate size of buffer needed for HTML & create buffer
-					int buffsz = filesz + fsize2 + fNames + (fCount * 115/*115 is the amount of characters in HTML each directory listing needs*/);
-					buffsz *= 1.4;
+					int buffsz = filesz + fsize2 + 140 + (fNames) + (fCount * 95/*115 is the amount of characters in HTML each directory listing needs*/);
 
 					char* trueret = new char[buffsz];
 					trueret[0] = '\0';
@@ -130,10 +143,6 @@ void* DEFAULT(void* pparam, void* pparam2)
 					strncat_s(trueret, buffsz, data.data(), data.length());
 					strncat_s(trueret, buffsz, "/</h1><hr class=\"divider my-4\"></div><div class=\"col-lg-8 align-self-baseline\">", strlen("/</h1><hr class=\"divider my-4\"></div><div class=\"col-lg-8 align-self-baseline\">"));
 
-					//generate HTML for directory listing
-					wchar_t filename[4096] = { 0 };
-					MultiByteToWideChar(0, 0, newdir, strlen(newdir), filename, strlen(newdir));
-
 					hFindFile = FindFirstFile(filename, &FindFileData);
 					if (hFindFile != INVALID_HANDLE_VALUE) {
 						do {
@@ -141,37 +150,36 @@ void* DEFAULT(void* pparam, void* pparam2)
 							std::string dp(ws.begin(), ws.end());
 
 							if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-								strncat_s(trueret, buffsz, "<p class=\"text-white-75 font-weight-light mb-5\" style=\"text-align: left; margin-left: 7vw\"\">", strlen("<p class=\"text-white-75 font-weight-light mb-5\" style=\"text-align: left; margin-left: 7vw\"\">"));
+								strncat_s(trueret, buffsz, "<div class=\"alert alert-info\" role=\"alert\"><a href=\"/", strlen("<div class=\"alert alert-info\" role=\"alert\">><a href=/\""));
 								strncat_s(trueret, buffsz, data.data(), data.length());
 								strncat_s(trueret, buffsz, "/", strlen("/"));
 								strncat_s(trueret, buffsz, dp.c_str(), dp.length());
-								strncat_s(trueret, buffsz, "</p>", strlen("</p>"));
-								//strncat_s(trueret, buffsz, data.data(), data.length());
-								//strncat_s(trueret, buffsz, "/", strlen("/"));
-								//strncat_s(trueret, buffsz, (char*)FindFileData.cFileName, std::char_traits<wchar_t>::length(FindFileData.cFileName));
-								//strncat_s(trueret, buffsz, "</a><br><br>", strlen("</a><br><br>"));
+								strncat_s(trueret, buffsz, "\" class=\"alert-link\">", strlen("\" class=\"alert-link\">"));
+								strncat_s(trueret, buffsz, data.data(), data.length());
+								strncat_s(trueret, buffsz, "/", strlen("/"));
+								strncat_s(trueret, buffsz, dp.c_str(), dp.length());
+								strncat_s(trueret, buffsz, "</a></div>", strlen("</a></div>"));
 							} else if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 								if (FindFileData.cFileName[0] == '.' && FindFileData.cFileName[1] == '\0' || FindFileData.cFileName[0] == '.' && FindFileData.cFileName[1] == '.') continue;
 
 								std::vector<std::string>fp = srv->stringExp(dp, '\\');
 
-								strncat_s(trueret, buffsz, "<p class=\"text-white-75 font-weight-light mb-5\" style=\"text-align: left; margin-left: 7vw\"\">", strlen("<p class=\"text-white-75 font-weight-light mb-5\" style=\"text-align: left; margin-left: 7vw\"\">"));
+								strncat_s(trueret, buffsz, "<div class=\"alert alert-info\" role=\"alert\"><a href=\"/", strlen("<div class=\"alert alert-info\" role=\"alert\">><a href=/\""));
 								strncat_s(trueret, buffsz, data.data(), data.length());
 								strncat_s(trueret, buffsz, "/", strlen("/"));
 								strncat_s(trueret, buffsz, fp[fp.size() - 1].data(), fp[fp.size() - 1].length());
-								strncat_s(trueret, buffsz, "/</p>", strlen("/</p>"));
-								//strncat_s(trueret, buffsz, "\" role=\"button\">skylers.work", strlen("\" role=\"button\">skylers.work"));
-								//strncat_s(trueret, buffsz, data.data(), data.length());
-								//strncat_s(trueret, buffsz, "/", strlen("/"));
-								//strncat_s(trueret, buffsz, fp[fp.size() - 1].data(), fp[fp.size() - 1].length());
-								//strncat_s(trueret, buffsz, "/</a><br><br>", strlen("/</a><br><br>"));
+								strncat_s(trueret, buffsz, "\" class=\"alert-link\">", strlen("\" class=\"alert-link\">"));
+								strncat_s(trueret, buffsz, data.data(), data.length());
+								strncat_s(trueret, buffsz, "/", strlen("/"));
+								strncat_s(trueret, buffsz, fp[fp.size() - 1].data(), fp[fp.size() - 1].length());
+								strncat_s(trueret, buffsz, "/</a></div>", strlen("/</a></div>"));
 							}
 						} while (FindNextFile(hFindFile, &FindFileData) != 0);
 
 						FindClose(hFindFile);
 					}
 					//copy second half of canvas page HTML to buffer
-
+					printf("%i %i %i %i", strlen(trueret), buffsz, strlen(ret2), fsize2);
 					strncat_s(trueret, buffsz, ret2, fsize2);
 
 					resp.responsecode = std::string("200 OK");
