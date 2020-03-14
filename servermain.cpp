@@ -32,7 +32,6 @@ int main()
 		printf("[webx] Server boot failed, master listening socket failed to begin Listening\n");
 
 	webhks->RegisterWebhook("INDEX", DEFAULT);
-	webhks->RegisterWebhook("RUNSTRING", RUNLUA);
 
 	printf("[webx 2.0] webx boot procedure completed successfully!\n");
 	printf("[webx 2.0] HTTP/S Framework stable & listening for connections!\n");
@@ -65,7 +64,7 @@ int main()
 				client->SSLInit(CERT_FILE, KEY_FILE);
 				client->SSLBind();
 
-				if (client->SSLAccept()) {
+				if (client->SSLAccept() == CSOCKET_SSL_SUCCESS) {
 					HANDLE process_cl_request = CreateThread(NULL, NULL, request_proc, (LPVOID)client, 0, NULL);
 				}
 			} else {
@@ -147,14 +146,12 @@ DWORD WINAPI request_proc(LPVOID pparam)
 
 	while (!shut) {
 		int got = client->Recv(buff, 1500);
-		if (got == WEBSOCK_ERROR) {
+		if (got == WEBSOCK_ERROR || strcmp(buff, "") == 0) {
 			break;
 		}
 
-		if (strcmp(buff, "") == 0)
-			break;
-
 		printf("\n%s\n", buff);
+
 		cl_info cl;
 		cl.cl		= client;
 		cl.rheaders = master->ParseHTTPRequest(buff);

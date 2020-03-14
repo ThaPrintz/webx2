@@ -3,17 +3,6 @@
 #include "config.h"
 #include <direct.h>
 
-__declspec(dllimport) luxZ* NewLUXInterface();
-
-void* RUNLUA(void* pparam, void* pparam2)
-{
-	webxlib* srv	= (webxlib*)pparam;
-	cl_info* client = (cl_info*)pparam2;
-	luxZ* luxi		= NewLUXInterface();
-
-	return NULL;
-}
-
 void* DEFAULT(void* pparam, void* pparam2)
 {
 	webxlib* srv    = (webxlib*)pparam;
@@ -117,7 +106,7 @@ void* DEFAULT(void* pparam, void* pparam2)
 							std::string dp(ws.begin(), ws.end());
 
 							fCount++;
-							fNames += ((int)client->rheaders["DATA"].length()*5) + ((int)dp.length()*5) + 4;
+							fNames += ((int)client->rheaders["DATA"].length()*2) + ((int)dp.length()*2) + 4;
 						} while (FindNextFile(hFindFile, &FindFileData) != 0);
 
 						FindClose(hFindFile);
@@ -179,7 +168,7 @@ void* DEFAULT(void* pparam, void* pparam2)
 						FindClose(hFindFile);
 					}
 					//copy second half of canvas page HTML to buffer
-					printf("%i %i %i %i", strlen(trueret), buffsz, strlen(ret2), fsize2);
+					printf("\n_trueret: '%i'\n_ret2: '%i'\n_trueret + ret2: '%i'\n_buffsz: '%i'\n", strlen(trueret), strlen(ret2), strlen(trueret)+strlen(ret2), buffsz);
 					strncat_s(trueret, buffsz, ret2, fsize2);
 
 					resp.responsecode = std::string("200 OK");
