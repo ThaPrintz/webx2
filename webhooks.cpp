@@ -2,6 +2,7 @@
 #include <Shlwapi.h>
 #include "config.h"
 #include <direct.h>
+#include <fstream>
 
 void* DEFAULT(void* pparam, void* pparam2)
 {
@@ -48,6 +49,32 @@ void* DEFAULT(void* pparam, void* pparam2)
 						resp.content_type = mimetypes[fType];
 					} else {
 						resp.content_type = std::string("application/octet-stream");
+					}
+
+					if (client->rheaders.find("Range") != client->rheaders.end()) {
+						auto bran = srv->stringExp(client->rheaders["Range"], '-');
+
+						std::streamsize st  = std::stoi(bran[0]);
+						std::streamsize end = std::stoi(bran[1]);
+
+						std::fstream file(data.c_str(), std::fstream::in | std::fstream::out);
+						file.seekg(st);
+
+						char* fbuff = new char[(end - st)+1];
+
+						file.read(fbuff, end - st);
+						file.close();
+
+						auto clp = std::string("HTTP/1.1 206 Partial Content\r\nServer: webxlib HTTP Framework\r\nDate: " + std::string(srv->systime()) + "\r\n"
+							+ "Content-Length: " + std::to_string(end - st) + "\r\n"
+							+ "Content-Type: " + resp.content_type + "\r\n"
+							+ "Content-Range: bytes " + client->rheaders["Range"] + "/*\r\n"
+							+ "Connection: close\r\n\r\n");
+
+						client->cl->Send(clp.c_str(), clp.size());
+						client->cl->Send(fbuff, end-st);
+
+						return NULL;
 					}
 
 					resp.responsecode		= std::string("200 OK");
@@ -184,7 +211,7 @@ void* DEFAULT(void* pparam, void* pparam2)
 				}
 			} else {
 				//404
-				resp.responsecode = std::string("200 OK");
+				resp.responsecode = std::string("404 Not Found");
 				resp.content_type = std::string("text/html");
 				resp.response_content = "";
 
@@ -209,8 +236,85 @@ void* DEFAULT(void* pparam, void* pparam2)
 				return NULL;
 			}
 		}
-	} //else if (client->rheaders["METHOD"] == "HEAD") {
-	//} else if (client->rheaders["METHOD"] == "POST") {
+	} else if (client->rheaders["METHOD"] == "HEAD") {
+		std::string data = client->rheaders["DATA"];
+
+		HTTP_packet resp;
+		resp.server     = std::string("webxlib HTTP Framework");
+		resp.connection = std::string("close");
+
+		size_t filesz;
+
+		if (strcmp(data.c_str(), "/") == 0) {
+			resp.responsecode = std::string("200 OK");
+			resp.content_type = std::string("text/html");
+			resp.response_content = "";
+
+			if (srv->fileExists(webxindex)) {
+				srv->LoadFiletoMem((char*)webxindex, &filesz);
+				resp.content_length = std::to_string(filesz);
+			} else {
+				resp.content_length   = std::to_string(strlen(mainpage));
+			}
+
+			auto reply = srv->BuildResponsePacket(resp);
+			client->cl->Send(reply.c_str(), reply.size());
+
+			return NULL;
+		} else {
+			data = client->rheaders["DATA"].substr(1, client->rheaders["DATA"].size() - 1);
+
+			if (srv->fileExists(data.c_str())) {
+				auto mimetypes = srv->GetMimetypesTable();
+				std::string fType = PathFindExtensionA((LPCSTR)data.c_str());
+
+				if (fType != "\0") {
+					fType = fType.substr(1, fType.size() - 1);
+
+					auto it = mimetypes.find(fType.data());
+					if (it != mimetypes.end()) {
+						resp.content_type = mimetypes[fType];
+					} else {
+						resp.content_type = std::string("application/octet-stream");
+					}
+
+					resp.responsecode = std::string("200 OK");
+					resp.response_content = "";
+
+					auto filed = (const char*)srv->LoadFiletoMem((char*)data.data(), &filesz);
+					resp.content_length = std::to_string(filesz);
+
+					auto reply = srv->BuildResponsePacket(resp);
+
+					client->cl->Send(reply.c_str(), reply.size());
+
+					return NULL;
+				} else {
+					//404
+					resp.responsecode = std::string("404 Not Found");
+					resp.content_type = std::string("text/html");
+					resp.response_content = "";
+					resp.content_length = "0";
+
+					auto reply = srv->BuildResponsePacket(resp);
+					client->cl->Send(reply.c_str(), reply.size());
+
+					return NULL;
+				}
+			} else {
+				//404
+				resp.responsecode		= std::string("404 Not Found");
+				resp.content_type		= std::string("text/html");
+				resp.response_content	= "";
+				resp.content_length		= "0";
+
+				auto reply = srv->BuildResponsePacket(resp);
+				client->cl->Send(reply.c_str(), reply.size());
+
+				return NULL;
+			}
+		}
+	} //else if (client->rheaders["METHOD"] == "POST") {
 	//} else if (client->rheaders["METHOD"] == "PUT") {
 	//} else if (client->rheaders["METHOD"] == "DELETE") {
 	//} else if (client->rheaders["METHOD"] == "CONNECT") {

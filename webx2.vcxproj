@@ -71,52 +71,52 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>E:\APILibraries\csocket\csocket;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\APILibraries\csocket;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\APILibraries\libcsock\libcsock;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\APILibraries\libcsock;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>E:\APILibraries\csocket\csocket;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\APILibraries\csocket;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\APILibraries\libcsock\libcsock;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\APILibraries\libcsock;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>E:\APILibraries\csocket\csocket;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\APILibraries\csocket;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\APILibraries\libcsock\libcsock;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\APILibraries\libcsock;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>E:\APILibraries\csocket\csocket;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\APILibraries\csocket;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\APILibraries\libcsock\libcsock;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\APILibraries\libcsock;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>E:\APILibraries\csocket\csocket;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\APILibraries\libcsock\libcsock;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>E:\APILibraries\csocket;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CSOCKET.lib;WEBXLIB.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\APILibraries\webxlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>webxlib.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>E:\APILibraries\csocket\csocket;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\APILibraries\libcsock\libcsock;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>E:\APILibraries\csocket;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CSOCKET.lib;WEBXLIB.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\APILibraries\webxlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>webxlib.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -125,17 +125,17 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>E:\APILibraries\csocket\csocket;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\APILibraries\libcsock\libcsock;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>E:\APILibraries\csocket;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CSOCKET.lib;WEBXLIB.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\APILibraries\webxlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>webxlib.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -144,17 +144,17 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>E:\APILibraries\csocket\csocket;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\APILibraries\libcsock\libcsock;E:\APILibraries\webxlib\webxlib;E:\APILibraries\WolfSSL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>E:\APILibraries\csocket;E:\APILibraries\webxlib;E:\APILibraries\WolfSSL\Release1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CSOCKET.lib;WEBXLIB.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\APILibraries\webxlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>webxlib.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

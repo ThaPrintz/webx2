@@ -11,24 +11,24 @@ webxlib::webhook* webhks;
 
 int main()
 {
-	master = CreateWEBXInterface();	  
+	master = new webxlib();
 	webhks = master->NewWebhookInterface();
 
 	csockdata httpsl;
 	httpsl.address		 = "0.0.0.0";
 	httpsl.port			 = "443";
-	httpsl.dataprotocol  = TCPWEBSOCK;
-	httpsl.ipprotocol	 = IPV4WEBSOCK;
-	httpsl.secure		 = HTTPSWEBSOCK;
+	httpsl.dataprotocol  = TCPSOCK;
+	httpsl.ipprotocol	 = IPV4SOCK;
+	httpsl.socktype		 = SSLSOCK;
 
 	webxlib::socket* httpsListener = master->NewWebsock(&httpsl);
 
 	auto ret2 = httpsListener->Bind();
-	if (ret2 != WEBSOCK_SUCCESS)
+	if (ret2 != SOCK_SUCCESS)
 		printf("[webx] Server boot failed, master listening socket failed to Bind\n");
 
 	ret2 = httpsListener->Listen();
-	if (ret2 != WEBSOCK_SUCCESS)
+	if (ret2 != SOCK_SUCCESS)
 		printf("[webx] Server boot failed, master listening socket failed to begin Listening\n");
 
 	webhks->RegisterWebhook("INDEX", DEFAULT);
@@ -47,8 +47,8 @@ int main()
 
 			delete httpsListener;
 			httpsListener = master->NewWebsock(&httpsl);
-			if (httpsListener->Bind() == WEBSOCK_SUCCESS) {
-				if (httpsListener->Listen() == WEBSOCK_SUCCESS) {
+			if (httpsListener->Bind() == SOCK_SUCCESS) {
+				if (httpsListener->Listen() == SOCK_SUCCESS) {
 					printf("[webx 2.0] webx rebooted server HTTPS listener!\n");
 				}
 			} else {
@@ -64,7 +64,7 @@ int main()
 				client->SSLInit(CERT_FILE, KEY_FILE);
 				client->SSLBind();
 
-				if (client->SSLAccept() == CSOCKET_SSL_SUCCESS) {
+				if (client->SSLAccept() == SOCK_SUCCESS) {
 					HANDLE process_cl_request = CreateThread(NULL, NULL, request_proc, (LPVOID)client, 0, NULL);
 				}
 			} else {
@@ -85,18 +85,18 @@ DWORD WINAPI http_listen(LPVOID pparam)
 	csockdata httpl;
 	httpl.address		= "0.0.0.0";
 	httpl.port			= "80";
-	httpl.dataprotocol  = TCPWEBSOCK;
-	httpl.ipprotocol	= IPV4WEBSOCK;
-	httpl.secure		= HTTPWEBSOCK;
+	httpl.dataprotocol  = TCPSOCK;
+	httpl.ipprotocol	= IPV4SOCK;
+	httpl.socktype		= SIMPLESOCK;
 
 	webxlib::socket* httpListener = srv->NewWebsock(&httpl);
 
 	auto ret = httpListener->Bind();
-	if (ret != WEBSOCK_SUCCESS)
+	if (ret != SOCK_SUCCESS)
 		printf("[webx] Server boot failed, master listening socket failed to Bind\n");
 
 	ret = httpListener->Listen();
-	if (ret != WEBSOCK_SUCCESS)
+	if (ret != SOCK_SUCCESS)
 		printf("[webx] Server boot failed, master listening socket failed to begin Listening\n");
 
 	while (true) {
@@ -107,8 +107,8 @@ DWORD WINAPI http_listen(LPVOID pparam)
 
 			delete httpListener;
 			httpListener = srv->NewWebsock(&httpl);
-			if (httpListener->Bind() == WEBSOCK_SUCCESS) {
-				if (httpListener->Listen() == WEBSOCK_SUCCESS) {
+			if (httpListener->Bind() == SOCK_SUCCESS) {
+				if (httpListener->Listen() == SOCK_SUCCESS) {
 					printf("[webx 2.0] webx rebooted server HTTP listener!\n");
 				}
 			} else {
@@ -146,7 +146,7 @@ DWORD WINAPI request_proc(LPVOID pparam)
 
 	while (!shut) {
 		int got = client->Recv(buff, 1500);
-		if (got == WEBSOCK_ERROR || strcmp(buff, "") == 0) {
+		if (got == SOCK_ERROR || strcmp(buff, "") == 0) {
 			break;
 		}
 
